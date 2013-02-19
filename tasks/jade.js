@@ -38,7 +38,8 @@ module.exports = function(grunt) {
     var srcCode = grunt.file.read(srcFile);
 
     try {
-      return require('jade').compile(srcCode, options)(data);
+      var compiledTemplate = require('jade').compile(srcCode, options);
+      return options.precompile ? compiledTemplate : compiledTemplate(data);
     } catch (e) {
       grunt.log.error(e);
       grunt.fail.warn('Jade failed to compile.');
