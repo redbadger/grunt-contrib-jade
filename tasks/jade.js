@@ -31,6 +31,15 @@ module.exports = function(grunt) {
     });
   });
 
+  var amdWrapper = function(compiledTemplate) {
+   var amdTemplate = 
+     "define(['jade'], function(jade) {\n" +
+     "return #{compiledTemplate}\n" +
+     "});";
+
+   return amdTemplate.replace('#{compiledTemplate}', compiledTemplate);
+  };
+
   var compileJade = function(srcFile, options, data) {
     options = grunt.util._.extend({filename: srcFile}, options);
     delete options.data;
@@ -39,7 +48,15 @@ module.exports = function(grunt) {
 
     try {
       var compiledTemplate = require('jade').compile(srcCode, options);
-      return options.precompile ? compiledTemplate : compiledTemplate(data);
+      if (options.precompile) {
+        if (options.amd) {
+          compiledTemplate = amdWrapper(compiledTemplate.toString());
+        }
+
+        return compiledTemplate.toString();
+      } else {
+        return compiledTemplate(data);
+      }
     } catch (e) {
       grunt.log.error(e);
       grunt.fail.warn('Jade failed to compile.');
